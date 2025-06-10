@@ -1,8 +1,8 @@
 import nextConnect from "next-connect";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
-import { connectDB } from "../config.js";
-import Product from "../server/models/Product.js";
+import { connectDB } from "../../../config.js";
+import Product from "../../../server/models/Product.js";
 
 dotenv.config();
 await connectDB();
