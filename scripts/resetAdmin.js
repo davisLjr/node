@@ -21,7 +21,7 @@ const run = async () => {
     // Crear el nuevo admin
     const passwordHash = await bcrypt.hash("0000000", 10);
     const newAdmin = await User.create({
-      email: "admin@example.com",
+      email: "adminone@example.com",
       passwordHash,
     });
     console.log("✅ Nuevo usuario creado:", newAdmin.email);
