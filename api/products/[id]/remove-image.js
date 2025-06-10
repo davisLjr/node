@@ -1,5 +1,3 @@
-const ncModule = await import("next-connect");
-const nextConnect = ncModule.default ?? ncModule;
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { connectDB } from "../../../config.js";
@@ -8,6 +6,8 @@ import { v2 as cloudinary } from "cloudinary";
 
 dotenv.config();
 await connectDB();
+
+const { default: nextConnect } = await import("next-connect");
 
 cloudinary.config({ 
   cloud_name: process.env.CLOUD_NAME,
