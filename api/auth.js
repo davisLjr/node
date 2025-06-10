@@ -1,4 +1,5 @@
-const { default: nextConnect } = await import("next-connect");
+const ncModule = await import("next-connect");
+const nextConnect = ncModule.default ?? ncModule;
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
