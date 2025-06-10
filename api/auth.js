@@ -1,4 +1,7 @@
-import nextConnect from "next-connect";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+
+const nextConnect = require("next-connect");
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
