@@ -1,7 +1,7 @@
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-
-const nextConnect = require("next-connect");
+const nextConnectPkg = require("next-connect");
+const nextConnect = nextConnectPkg.default ?? nextConnectPkg;
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { connectDB } from "../../../config.js";
