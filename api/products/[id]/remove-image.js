@@ -7,13 +7,9 @@ import { v2 as cloudinary } from "cloudinary";
 dotenv.config();
 await connectDB();
 
-const { default: nextConnect } = await import("next-connect");
-
-cloudinary.config({ 
-  cloud_name: process.env.CLOUD_NAME,
-  api_key:    process.env.CLOUD_API_KEY,
-  api_secret: process.env.CLOUD_API_SECRET,
-});
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const nextConnect = require("next-connect");
 
 const handler = nextConnect();
 

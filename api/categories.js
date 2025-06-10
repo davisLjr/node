@@ -6,8 +6,9 @@ import Category from "../server/models/Category.js";
 dotenv.config();
 await connectDB();
 
-const { default: nextConnect } = await import("next-connect");
-
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const nextConnect = require("next-connect");
 
 const handler = nextConnect();
 
