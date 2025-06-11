@@ -2,7 +2,6 @@ import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { connectDB } from "../../config.js";
 import Product from "../../server/models/Product.js";
-import { getProducts } from "../../server/controllers/productController.js";
 import { uploadImages } from "../../server/middleware/uploadMiddleware.js";
 import { setCorsHeaders } from "../../utils/setCorsHeaders.js";
 
@@ -10,8 +9,7 @@ dotenv.config();
 await connectDB();
 
 export default async function handler(req, res) {
-  const corsHandled = setCorsHeaders(req, res);
-  if (corsHandled) return;
+  if (setCorsHeaders(req, res)) return;
 
   try {
     const auth = req.headers.authorization || "";
@@ -24,20 +22,28 @@ export default async function handler(req, res) {
     req.userId = userId;
 
     if (req.method === "GET") {
-      const products = await getProducts();
-      res.status(200).json(products);
+      try {
+        const products = await Product.find();
+        res.status(200).json(products);
+      } catch (err) {
+        res.status(500).json({ error: err.message });
+      }
       return;
     }
 
     if (req.method === "POST") {
-      await uploadImages(req, res, async () => {
-        const imageUrls = req.files.map((f) => f.path);
-        const newProduct = await Product.create({
-          ...req.body,
-          images: imageUrls,
+      try {
+        await uploadImages(req, res, async () => {
+          const imageUrls = req.files.map((f) => f.path);
+          const newProduct = await Product.create({
+            ...req.body,
+            images: imageUrls,
+          });
+          res.status(201).json(newProduct);
         });
-        res.status(201).json(newProduct);
-      });
+      } catch (err) {
+        res.status(500).json({ error: err.message });
+      }
       return;
     }
 
