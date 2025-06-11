@@ -36,4 +36,13 @@ app.post("/api/categories", async (req, res) => {
   res.status(201).json(newCat);
 });
 
+app.delete("/api/categories/:id", async (req, res) => {
+  try {
+    await Category.findByIdAndDelete(req.params.id);
+    res.json({ message: "Categoría eliminada" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default app;
