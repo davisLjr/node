@@ -1,3 +1,4 @@
+// api/categories/[id].js
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { connectDB } from "../../config.js";
@@ -9,10 +10,15 @@ await connectDB();
 
 export default async function handler(req, res) {
   if (setCorsHeaders(req, res)) return;
-  if (req.method !== "DELETE") return res.status(405).json({ error: "Método no permitido" });
+
+  if (req.method !== "DELETE") {
+    return res.status(405).json({ error: "Método no permitido" });
+  }
 
   const auth = req.headers.authorization || "";
-  if (!auth.startsWith("Bearer ")) return res.status(403).json({ error: "Token no proporcionado" });
+  if (!auth.startsWith("Bearer ")) {
+    return res.status(403).json({ error: "Token no proporcionado" });
+  }
   try {
     jwt.verify(auth.split(" ")[1], process.env.JWT_SECRET);
   } catch {

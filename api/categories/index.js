@@ -1,3 +1,4 @@
+// api/categories/index.js
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { connectDB } from "../../config.js";
@@ -10,25 +11,26 @@ await connectDB();
 export default async function handler(req, res) {
   if (setCorsHeaders(req, res)) return;
 
-  const auth = req.headers.authorization || "";
-  if (!auth.startsWith("Bearer ")) {
-    return res.status(403).json({ error: "Token no proporcionado" });
-  }
-  try {
-    jwt.verify(auth.split(" ")[1], process.env.JWT_SECRET);
-  } catch {
-    return res.status(403).json({ error: "Token inválido" });
-  }
+  if (req.method === "GET" || req.method === "POST") {
+    const auth = req.headers.authorization || "";
+    if (!auth.startsWith("Bearer ")) {
+      return res.status(403).json({ error: "Token no proporcionado" });
+    }
+    let payload;
+    try {
+      payload = jwt.verify(auth.split(" ")[1], process.env.JWT_SECRET);
+    } catch {
+      return res.status(403).json({ error: "Token inválido" });
+    }
 
-  if (req.method === "GET") {
-    const cats = await Category.find({ owner: jwt.decode(auth.split(" ")[1]).userId });
-    return res.json(cats);
-  }
+    if (req.method === "GET") {
+      const cats = await Category.find({ owner: payload.userId });
+      return res.json(cats);
+    }
 
-  if (req.method === "POST") {
+    // POST
     const { name } = req.body;
     if (!name?.trim()) return res.status(400).json({ error: "Nombre requerido" });
-    const payload = jwt.verify(auth.split(" ")[1], process.env.JWT_SECRET);
     const newCat = await Category.create({ name, owner: payload.userId });
     return res.status(201).json(newCat);
   }
