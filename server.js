@@ -12,6 +12,21 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5001;
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  process.env.ADMIN_PANEL_ORIGIN,
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error("CORS no permitido"));
+  },
+  credentials: true,
+}));
+
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -24,14 +39,6 @@ if (process.env.NODE_ENV !== "production") {
     next();
   });
 }
-
-// 🌐 cuando tenga el front
-// const allowedOrigins = [process.env.ADMIN_PANEL_ORIGIN];
-// app.use(cors({
-//   origin: allowedOrigins,
-// }));
-
-app.use(cors());
 
 app.use(express.json());
 
