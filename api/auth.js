@@ -1,4 +1,4 @@
-import express from "express";
+// /api/auth.js
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -8,12 +8,14 @@ import User from "../server/models/User.js";
 dotenv.config();
 await connectDB();
 
-const app = express();
-app.use(express.json());
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Método no permitido" });
+  }
 
-app.post("/api/auth/login", async (req, res) => {
   try {
     const { email, password } = req.body;
+
     const user = await User.findOne({ email });
     if (!user) return res.status(401).json({ error: "Credenciales inválidas" });
 
@@ -28,6 +30,4 @@ app.post("/api/auth/login", async (req, res) => {
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
-});
-
-export default app;
+}
