@@ -1,4 +1,3 @@
-// api/categories/index.js
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { connectDB } from "../../config.js";
@@ -25,12 +24,14 @@ export default async function handler(req, res) {
 
     if (req.method === "GET") {
       const cats = await Category.find({ owner: payload.userId });
-      return res.json(cats);
+      return res.status(200).json(cats);
     }
 
-    // POST
+    // POST /api/categories
     const { name } = req.body;
-    if (!name?.trim()) return res.status(400).json({ error: "Nombre requerido" });
+    if (!name?.trim()) {
+      return res.status(400).json({ error: "Nombre requerido" });
+    }
     const newCat = await Category.create({ name, owner: payload.userId });
     return res.status(201).json(newCat);
   }

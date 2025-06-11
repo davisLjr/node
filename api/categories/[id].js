@@ -1,4 +1,3 @@
-// api/categories/[id].js
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { connectDB } from "../../config.js";
@@ -27,7 +26,7 @@ export default async function handler(req, res) {
 
   try {
     await Category.findByIdAndDelete(req.query.id);
-    return res.json({ message: "Categoría eliminada" });
+    return res.status(200).json({ message: "Categoría eliminada" });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
