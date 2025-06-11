@@ -4,18 +4,13 @@ import { connectDB } from "../../config.js";
 import Product from "../../server/models/Product.js";
 import { getProducts } from "../../server/controllers/productController.js";
 import { uploadImages } from "../../server/middleware/uploadMiddleware.js";
+import { setCorsHeaders } from "../utils/setCorsHeaders.js";
 
 dotenv.config();
 await connectDB();
 
 export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", process.env.ADMIN_PANEL_ORIGIN || "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
+  if (setCorsHeaders(req, res)) return;
 
   const auth = req.headers.authorization || "";
   if (!auth.startsWith("Bearer ")) {
