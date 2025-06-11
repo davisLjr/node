@@ -4,7 +4,7 @@ import { connectDB } from "../../config.js";
 import Product from "../../server/models/Product.js";
 import { getProducts } from "../../server/controllers/productController.js";
 import { uploadImages } from "../../server/middleware/uploadMiddleware.js";
-import { setCorsHeaders } from "../utils/setCorsHeaders.js";
+import { setCorsHeaders } from "../../utils/setCorsHeaders.js";
 
 dotenv.config();
 await connectDB();
