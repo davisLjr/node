@@ -1,3 +1,4 @@
+import express from "express";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { connectDB } from "../config.js";
@@ -6,13 +7,10 @@ import Category from "../server/models/Category.js";
 dotenv.config();
 await connectDB();
 
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const nextConnect = require("next-connect");
+const app = express();
+app.use(express.json());
 
-const handler = nextConnect();
-
-handler.use((req, res, next) => {
+app.use((req, res, next) => {
   const auth = req.headers.authorization || "";
   if (!auth.startsWith("Bearer ")) return res.status(403).json({ error: "Token no proporcionado" });
   try {
@@ -24,17 +22,16 @@ handler.use((req, res, next) => {
   }
 });
 
-handler.get(async (req, res) => {
+app.get("/api/categories", async (req, res) => {
   const cats = await Category.find({ owner: req.userId });
   res.json(cats);
 });
 
-
-handler.post(async (req, res) => {
+app.post("/api/categories", async (req, res) => {
   const { name } = req.body;
   if (!name?.trim()) return res.status(400).json({ error: "Nombre requerido" });
   const newCat = await Category.create({ name, owner: req.userId });
   res.status(201).json(newCat);
 });
 
-export default handler;
+export default app;

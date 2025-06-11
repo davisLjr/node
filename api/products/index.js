@@ -1,3 +1,4 @@
+import express from "express";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { connectDB } from "../../config.js";
@@ -8,42 +9,39 @@ import { uploadImages } from "../../server/middleware/uploadMiddleware.js";
 dotenv.config();
 await connectDB();
 
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const nextConnect = require("next-connect");
+const router = express.Router();
 
-const handler = nextConnect();
+router.use((req, res, next) => {
+  const auth = req.headers.authorization || "";
+  if (!auth.startsWith("Bearer ")) {
+    return res.status(403).json({ error: "Token no proporcionado" });
+  }
 
-handler.get(async (req, res) => {
+  try {
+    const { userId } = jwt.verify(auth.split(" ")[1], process.env.JWT_SECRET);
+    req.userId = userId;
+    next();
+  } catch {
+    return res.status(403).json({ error: "Token inválido" });
+  }
+});
+
+router.get("/", async (req, res) => {
   const products = await getProducts();
   return res.status(200).json(products);
 });
 
-handler.post(
-  (req, res, next) => {
-    const auth = req.headers.authorization || "";
-    if (!auth.startsWith("Bearer ")) return res.status(403).json({ error: "Token no proporcionado" });
-    try {
-      const { userId } = jwt.verify(auth.split(" ")[1], process.env.JWT_SECRET);
-      req.userId = userId;
-      next();
-    } catch {
-      return res.status(403).json({ error: "Token inválido" });
-    }
-  },
-  uploadImages,
-  async (req, res) => {
-    try {
-      const imageUrls = req.files.map(f => f.path);
-      const newProduct = await Product.create({
-        ...req.body,
-        images: imageUrls,
-      });
-      res.status(201).json(newProduct);
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
+router.post("/", uploadImages, async (req, res) => {
+  try {
+    const imageUrls = req.files.map((f) => f.path);
+    const newProduct = await Product.create({
+      ...req.body,
+      images: imageUrls,
+    });
+    res.status(201).json(newProduct);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-);
+});
 
-export default handler;
+export default router;

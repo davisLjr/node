@@ -1,3 +1,4 @@
+import express from "express";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { connectDB } from "../../../config.js";
@@ -7,16 +8,19 @@ import { v2 as cloudinary } from "cloudinary";
 dotenv.config();
 await connectDB();
 
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const nextConnect = require("next-connect");
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_API_KEY,
+  api_secret: process.env.CLOUD_API_SECRET,
+});
 
-const handler = nextConnect();
+const app = express();
+app.use(express.json());
 
-
-handler.use((req, res, next) => {
-  const auth = req.headers.authorization||"";
+const verifyToken = (req, res, next) => {
+  const auth = req.headers.authorization || "";
   if (!auth.startsWith("Bearer ")) return res.status(403).json({ error: "Token no proporcionado" });
+
   try {
     const { userId } = jwt.verify(auth.split(" ")[1], process.env.JWT_SECRET);
     req.userId = userId;
@@ -24,9 +28,11 @@ handler.use((req, res, next) => {
   } catch {
     res.status(403).json({ error: "Token inválido" });
   }
-});
+};
 
-handler.patch(async (req, res) => {
+app.use(verifyToken);
+
+app.patch("/api/products/remove-images", async (req, res) => {
   try {
     const { imageUrl } = req.body;
     const prod = await Product.findById(req.query.id);
@@ -43,4 +49,4 @@ handler.patch(async (req, res) => {
   }
 });
 
-export default handler;
+export default app;

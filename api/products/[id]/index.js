@@ -1,3 +1,4 @@
+import express from "express";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { connectDB } from "../../../config.js";
@@ -6,15 +7,13 @@ import Product from "../../../server/models/Product.js";
 dotenv.config();
 await connectDB();
 
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const nextConnect = require("next-connect");
+const app = express();
+app.use(express.json());
 
-const handler = nextConnect();
-
-handler.use((req, res, next) => {
+const verifyToken = (req, res, next) => {
   const auth = req.headers.authorization || "";
   if (!auth.startsWith("Bearer ")) return res.status(403).json({ error: "Token no proporcionado" });
+
   try {
     const { userId } = jwt.verify(auth.split(" ")[1], process.env.JWT_SECRET);
     req.userId = userId;
@@ -22,24 +21,28 @@ handler.use((req, res, next) => {
   } catch {
     res.status(403).json({ error: "Token inválido" });
   }
-});
+};
 
-handler.put(async (req, res) => {
+app.use(verifyToken);
+
+// PUT /api/products/[id]
+app.put("/api/products/:id", async (req, res) => {
   try {
-    const updated = await Product.findByIdAndUpdate(req.query.id, req.body, { new: true });
+    const updated = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json(updated);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-handler.delete(async (req, res) => {
+// DELETE /api/products/[id]
+app.delete("/api/products/:id", async (req, res) => {
   try {
-    await Product.findByIdAndDelete(req.query.id);
+    await Product.findByIdAndDelete(req.params.id);
     res.json({ message: "Producto eliminado" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-export default handler;
+export default app;
