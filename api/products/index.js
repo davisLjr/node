@@ -10,27 +10,26 @@ dotenv.config();
 await connectDB();
 
 export default async function handler(req, res) {
-  if (setCorsHeaders(req, res)) return;
-
-  const auth = req.headers.authorization || "";
-  if (!auth.startsWith("Bearer ")) {
-    return res.status(403).json({ error: "Token no proporcionado" });
-  }
+  const corsHandled = setCorsHeaders(req, res);
+  if (corsHandled) return;
 
   try {
+    const auth = req.headers.authorization || "";
+    if (!auth.startsWith("Bearer ")) {
+      res.status(403).json({ error: "Token no proporcionado" });
+      return;
+    }
+
     const { userId } = jwt.verify(auth.split(" ")[1], process.env.JWT_SECRET);
     req.userId = userId;
-  } catch {
-    return res.status(403).json({ error: "Token inválido" });
-  }
 
-  if (req.method === "GET") {
-    const products = await getProducts();
-    return res.status(200).json(products);
-  }
+    if (req.method === "GET") {
+      const products = await getProducts();
+      res.status(200).json(products);
+      return;
+    }
 
-  if (req.method === "POST") {
-    try {
+    if (req.method === "POST") {
       await uploadImages(req, res, async () => {
         const imageUrls = req.files.map((f) => f.path);
         const newProduct = await Product.create({
@@ -39,10 +38,11 @@ export default async function handler(req, res) {
         });
         res.status(201).json(newProduct);
       });
-    } catch (err) {
-      res.status(500).json({ error: err.message });
+      return;
     }
-  } else {
+
     res.status(405).json({ error: "Método no permitido" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 }
