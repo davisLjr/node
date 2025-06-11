@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
+import { setCorsHeaders } from "../utils/setCorsHeaders.js";
 import { connectDB } from "../../config.js";
 import Product from "../../server/models/Product.js";
 import { getProducts } from "../../server/controllers/productController.js";
@@ -12,6 +13,7 @@ await connectDB();
 const router = express.Router();
 
 router.use((req, res, next) => {
+  if (setCorsHeaders(req, res)) return;
   const auth = req.headers.authorization || "";
   if (!auth.startsWith("Bearer ")) {
     return res.status(403).json({ error: "Token no proporcionado" });
